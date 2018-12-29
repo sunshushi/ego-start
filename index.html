@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" />-->
+    <script src="egoPolish.js"></script>
+  </head>
+
+  <body>
+    <div id="ego">
+      <div>{{model}}</div>
+      <div>{{time}}</div>
+      <div ego-model="test"></div>
+      <button id="testBtn" ego-bind:click="testClick">click</button>
+      <br>
+      <input ego-bind:focus="testFocus" />
+      <div ego-if="time >  10"></div>
+    </div>
+    <script charset="utf-8">
+      let appPage = new Page({
+        data: {
+          model: 'model12',
+          test: 'test',
+          time: '2018'
+        },
+        methods: {
+          testClick: () => {
+            console.log('testClick')
+          },
+          testFocus: () => {
+            console.log('testFocus')
+          }
+        }
+      })
+      // setTimeout(() => {
+      //   appPage.setData({
+      //     time: 'haha',
+      //     model: 'sdf',
+      //     test: '25'
+      //   })
+      // }, 1000)
+    </script>
+  </body>
+
+</html>
