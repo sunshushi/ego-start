@@ -8,6 +8,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" />-->
     <script src="egoPolish.js"></script>
+    <style>
+      .father {
+        height: 200px;
+        width: 200px;
+      }
+
+      .son {
+        background: url('fitnessRoom/2.jpeg');
+        height: 100px;
+        width: 100px;
+      }
+    </style>
   </head>
 
   <body>
@@ -18,14 +30,27 @@
       <button id="testBtn" ego-bind:click="testClick">click</button>
       <br>
       <input ego-bind:focus="testFocus" />
-      <div ego-if="time >  10"></div>
+      <div ego-if="time == 2018">hahahahaha</div>
+      <div ego-for="dataList">
+        {{data1}}
+      </div>
     </div>
+
+    <p id="testp" contenteditable="true" style="height: 20px;width: 100px;border:solid 1px black"></p>
     <script charset="utf-8">
       let appPage = new Page({
         data: {
           model: 'model12',
           test: 'test',
-          time: '2018'
+          time: '2018',
+          dataList: [
+            {
+              data1: 'hahaha',
+            },
+            {
+              data1: 'huhuhu'
+            }
+          ]
         },
         methods: {
           testClick: () => {
@@ -33,16 +58,50 @@
           },
           testFocus: () => {
             console.log('testFocus')
+            console.log(this)
           }
         }
       })
-      // setTimeout(() => {
-      //   appPage.setData({
-      //     time: 'haha',
-      //     model: 'sdf',
-      //     test: '25'
-      //   })
-      // }, 1000)
+      setTimeout(() => {
+        appPage.setData({
+          time: 'haha',
+          model: 'sdf',
+          test: '25'
+        })
+      }, 1000)
+
+
+      const getCursortPosition = function (element) {
+        var caretOffset = 0;
+        var doc = element.ownerDocument || element.document;
+        var win = doc.defaultView || doc.parentWindow;
+        var sel;
+        if (typeof win.getSelection != "undefined") { //谷歌、火狐
+          sel = win.getSelection();
+          if (sel.rangeCount > 0) { //选中的区域
+            var range = win.getSelection().getRangeAt(0);
+            console.log(range)
+            var preCaretRange = range.cloneRange(); //克隆一个选中区域
+            preCaretRange.selectNodeContents(element); //设置选中区域的节点内容为当前节点
+            preCaretRange.setEnd(range.endContainer, range.endOffset); //重置选中区域的结束位置
+            caretOffset = preCaretRange.toString().length;
+          }
+        } else if ((sel = doc.selection) && sel.type != "Control") { //IE
+          var textRange = sel.createRange();
+          var preCaretTextRange = doc.body.createTextRange();
+          preCaretTextRange.moveToElementText(element);
+          preCaretTextRange.setEndPoint("EndToEnd", textRange);
+          caretOffset = preCaretTextRange.text.length;
+        }
+        return caretOffset;
+      }
+      const testp = document.getElementById('testp')
+      testp.oninput = function(arguments) {
+        console.log(getCursortPosition(testp))
+      }
+      testp.onclick = function(arguments) {
+        console.log(getCursortPosition(testp))
+      }
     </script>
   </body>
 
