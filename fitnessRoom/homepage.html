@@ -1,26 +1,73 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Page Title</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" media="screen" href="homepage.css" />
-  <script src="homepage.js"></script>
-</head>
-<body>
-  <section id="homepage">
-    <div class="page-logo"></div>
-    <div class="receive-area">
-      <div class="receive-btn">点击领取</div>
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>29元活动</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="homepage.css" />
+    <script src="homepage.js"></script>
+    <script src="http://api.map.baidu.com/api?v=1.4" type="text/javascript"></script>
+  </head>
+
+  <body>
+    <div id="ego">
+      <section id="homepage">
+        <div class="page-logo">
+          <img src="imgs/wenzi-logo-7.jpg" >
+        </div>
+        <div class="receive-area">
+          <div class="receive-btn">点击领取</div>
+        </div>
+        <div class="title map-title">合作健身房</div>
+        <div id="map-area" style="height:300px;width:100%;"></div>
+          <!-- <div class="fitness-room-list" ego-for="fitnessRoomList">
+                <div class="fitness-room-panel">
+                  <div class="fitness-room-name"></div>
+                  <div class="fitness-room-btn"></div>
+                </div>
+                <div class="fitness-room-content"></div>
+                </div> -->
+        <div class="title rules-title">活动规则</div>
+        <div class="rules-area">
+          <p>这都是活动规则鸭1</p>
+          <p>这都是活动规则鸭2</p>
+          <p>这都是活动规则鸭3</p>
+        </div>
+      </section>
     </div>
-    <div class="fitness-room-list" ego-for="fitnessRoomList">
-      <div class="fitness-room-panel">
-        <div class="fitness-room-name"></div>
-        <div class="fitness-room-btn"></div>
-      </div>
-      <div class="fitness-room-content"></div>
-    </div>
-  </section>
-</body>
+    <script>
+      let map = new BMap.Map("map-area")
+      var point = new BMap.Point(120.2, 30.25); //创建点坐标
+      map.centerAndZoom(point, 14); //初始化地图，设置中心点坐标和地图级别
+      map.enableScrollWheelZoom(); //激活滚轮调整大小功能
+      map.addControl(new BMap.NavigationControl()); //添加控件：缩放地图的控件，默认在左上角；
+      map.addControl(new BMap.MapTypeControl()); //添加控件：地图类型控件，默认在右上方；
+      map.addControl(new BMap.ScaleControl()); //添加控件：地图显示比例的控件，默认在左下方；
+      map.addControl(new BMap.OverviewMapControl()); //添加控件：地图的缩略图的控件，默认在右下方； TrafficControl
+
+      var search = new BMap.LocalSearch("中国", {
+        onSearchComplete: function (result) {
+          if (search.getStatus() == BMAP_STATUS_SUCCESS) {
+            var res = result.getPoi(0);
+            var point = res.point;
+            map.centerAndZoom(point, 11);
+          }
+        },
+        renderOptions: { //结果呈现设置，
+          map: map,
+          autoViewport: true,
+          selectFirstResult: true
+        },
+
+      });
+
+      function setCity() {
+        search.search(document.getElementById("cityName").value);
+      }
+      search.search('太原');
+    </script>
+  </body>
+
 </html>

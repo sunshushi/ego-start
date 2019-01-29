@@ -6,3 +6,42 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+#ego {
+  background: black;
+  color: white;
+}
+#ego #homepage {
+  margin: 0 auto;
+  height: 100%;
+  width: 90%;
+}
+#ego #homepage .title {
+  color: white;
+  font-size: 30px;
+  font-weight: bolder;
+}
+#ego #homepage .page-logo {
+  width: 100%;
+}
+#ego #homepage .page-logo img {
+  width: 100%;
+}
+#ego #homepage .receive-area {
+  height: 42px;
+  width: 40%;
+  background: #e6c24c;
+  line-height: 42px;
+  font-size: 16px;
+  margin-left: 50%;
+  transform: translate(-50%);
+  text-align: center;
+  border-radius: 4px;
+  margin-top: 80px;
+  box-shadow: 10px 10px 10px #f3dd93;
+}
+#ego #homepage .map-title {
+  margin-top: 122px;
+}
+#ego #homepage .rules-title {
+  margin-top: 122px;
+}
