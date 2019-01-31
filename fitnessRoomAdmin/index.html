@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>活动管理后台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="index.css" />
+    <!-- 存储服务 -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js"></script>
+    <!-- 实时消息服务 -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/leancloud-realtime@4.2.1/dist/realtime.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-live-query-min.js"></script> -->
+    <!-- <script src="index.js"></script> -->
+  </head>
+
+  <body>
+    <section id="admin">
+      <aside>
+        <div class="aside-title">活动管理后台</div>
+        <ul>
+          <li>已报名人员展示</li>
+        </ul>
+      </aside>
+      <article>
+        <div class="article-header">
+          <p>{{currentKindTitle}}</p>
+        </div>
+        <div class="table-area">
+          <table>
+            <tr>
+              <th>客户名字</th>
+              <th>是否支付</th>
+            </tr>
+            <tr ego-for='customerList'>
+              <td>{{name}}</td>
+              <td ego-if='isPayed'>已支付</td>
+              <td ego-if='!isPayed'>未支付</td>
+            </tr>
+          </table>
+        </div>
+      </article>
+    </section>
+    <script>
+      const appId = 'mSS1prmpCf1BMFcHeKMSFWFf-gzGzoHsz'
+      const appKey = 'IUru4hMcIsqGadp0ut7vgzRP'
+      AV.init(appId, appKey)
+
+      let query = new AV.Query('customer')
+      query.include('name')
+      query.include('isPayed')
+      query.descending('ceatedAt')
+      query.find().then(function (customers) {
+        customers.forEach(function (customer) {
+          console.log(customer)
+          console.log(customer.get('name'))
+        })
+      })
+    </script>
+  </body>
+
+</html>

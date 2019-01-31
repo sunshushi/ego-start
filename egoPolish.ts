@@ -176,6 +176,8 @@ class Compiler {
         }
         if ((attributes[attr].nodeName as string).indexOf('ego-for') > -1) {
           let dataListName = attributes[attr].value
+          let dataList = this.observer.data[dataListName]
+
           // NOTE：这里这个遍历，是针对这个for节点的内部遍历，他所定义的节点和逻辑是不一样的，所以按道理
           // 这里的遍历操作的是for的这个内容，所以我们可以考虑把for的内容当做参数传入traversalElement
           // 让基础节点的遍历也可以使用这个参数，然后统一在遍历完之后进行
