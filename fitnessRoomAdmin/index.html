@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="index.css" />
     <!-- 存储服务 -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js"></script>
+    <script src="../egoPolish.js"></script>
     <!-- 实时消息服务 -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/leancloud-realtime@4.2.1/dist/realtime.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-live-query-min.js"></script> -->
@@ -16,32 +17,35 @@
   </head>
 
   <body>
-    <section id="admin">
-      <aside>
-        <div class="aside-title">活动管理后台</div>
-        <ul>
-          <li>已报名人员展示</li>
-        </ul>
-      </aside>
-      <article>
-        <div class="article-header">
-          <p>{{currentKindTitle}}</p>
-        </div>
-        <div class="table-area">
-          <table>
-            <tr>
-              <th>客户名字</th>
-              <th>是否支付</th>
-            </tr>
-            <tr ego-for='customerList'>
-              <td>{{name}}</td>
-              <td ego-if='isPayed'>已支付</td>
-              <td ego-if='!isPayed'>未支付</td>
-            </tr>
-          </table>
-        </div>
-      </article>
-    </section>
+    <div id="ego">
+      <section id="admin">
+        <aside>
+          <div class="aside-title">活动管理后台</div>
+          <ul>
+            <li>已报名人员展示</li>
+          </ul>
+        </aside>
+        <article>
+          <div class="article-header">
+            <!-- 变量名不支持大小写 -->
+            <p>{{title}}</p>
+          </div>
+          <div class="table-area">
+            <table border='1'>
+              <tr>
+                <th>客户名字</th>
+                <th>是否支付</th>
+              </tr>
+              <tr ego-for='customerList'>
+                <td>{{name}}</td>
+                <td ego-if='isPayed'>已支付/未支付</td>
+                <!-- <td ego-if='!isPayed'></td> -->
+              </tr>
+            </table>
+          </div>
+        </article>
+      </section>
+    </div>
     <script>
       const appId = 'mSS1prmpCf1BMFcHeKMSFWFf-gzGzoHsz'
       const appKey = 'IUru4hMcIsqGadp0ut7vgzRP'
@@ -55,7 +59,14 @@
         customers.forEach(function (customer) {
           console.log(customer)
           console.log(customer.get('name'))
+          console.log(customer.get('isPayed'))
         })
+      })
+      let appPage = new Page({
+        data: {
+          title: '已报名人员展示'
+        },
+        methods: {}
       })
     </script>
   </body>
