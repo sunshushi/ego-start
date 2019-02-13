@@ -3,6 +3,8 @@
 // 新问题，没有办法控制，没使用标签包裹的绑定点(目前使用检测后强制绑定了一个ego-model，但我觉得这样不太科学)
 // 新问题，如果在一个标签内既有{{}}数据绑定，又有ego-model该如何处理
 // 新问题，事件绑定，在修改数据之后会重复遍历，这样会将数据绑定四次
+// 新问题，事件绑定的遍历和绑定的检测有问题，这两者在处理的时候不够精致，当我们需要处理dom for之内的数据绑定的时候，整个dom都会因为当前的处理方式而gg
+
 
 // ---解决可能性： 给每一个节点添加一个遍历的flag，如果在一次数据的set过程中，遍历过一次了，那就不用在修改其他数据的时候再改变了
 
@@ -127,34 +129,52 @@ class Compiler {
   public traversalElement(element: HTMLElement = this.documentFragment.children[0]) {
     let index = 0
     this.currentElement = element
+    // NOTE:这个循环判断是有问题的
     while (element.children.length > index + 1) {
       // for循环内使用自己的循环，而不用使用这个循环
       if (!this.isHavingAttr(element, 'ego-for')) {
         this.traversalElement(element.children[index] as HTMLElement)
         index++
+      } else {
+        this.handleCatchForData(element)
+        index++
+        return
       }
     }
     this.handleCatchDataEgoModel(element)
     this.handleCatchDataModel(element)
     this.handleCatchEvent(element)
     this.handleCatchIfData(element)
-    this.handleCatchForData(element)
     return
   }
 
   // 考虑为for循环专门写一个遍历
   // for循环之中主要需要支持，数据绑定，if判断，以及事件绑定，不支持for循环嵌套
-  public traversalForElement(element: any) {
+  public traversalForElement(element: any, dataList: any[]) {
     // TODO: for循环的专门遍历逻辑
     let index = 0
-    while (element.childNodes.length > index + 1) {
-      this.traversalForElement(element.childNodes[index] as HTMLElement)
+    while (element.children.length > index) {
+      this.traversalForElement(element.children[index] as HTMLElement, dataList)
       index++
     }
-    this.handleCatchDataModel(element, true, 'dataList')
-    // this.handleCatchDataEgoModel(element)
-    // this.handleCatchEvent(element)
-    // this.handleCatchIfData(element)
+    this.handleCatchForDataModel(element, dataList)
+    return
+  }
+
+  public handleCatchForDataModel(element: HTMLElement, dataList: any[]) {
+    if (element.attributes && element.attributes.length > 0) {
+      if (element.attributes.getNamedItem('for-data')) {
+        const nodeValue = element.attributes.getNamedItem('for-data') as Attr
+        if (this.observer.dataList.indexOf(nodeValue.textContent as string) === -1) {
+          this.observer.dataList.push(nodeValue.textContent as string)
+        }
+        if (dataList) {
+          element.innerHTML = dataList[0][nodeValue.textContent as string]
+        } else {
+          element.innerHTML = ''
+        }
+      }
+    }
   }
 
   // 判断ego-for
@@ -167,23 +187,19 @@ class Compiler {
         }
         if ((attributes[attr].nodeName as string).indexOf('ego-for') > -1) {
           let dataListName = attributes[attr].value
-          let dataList = this.observer.data[dataListName]
-          if (!this.observer.data[dataListName]) {
+          let dataList: any = this.observer.data[dataListName]
+          if (!dataList) {
             (this.observer.data[dataListName] as any) = []
           }
           let listLength = this.observer.data[dataListName].length
           // 遍历同一个dom，但是要让这个dom渲染listLength次数
-          let modelElement: any = document.createDocumentFragment()
-          modelElement.innerHTML = element.childNodes[0]
+          // NOTE: 因为dom操作是用fragment进行操作的，不能再fragment里面再创建fragment以及其他的dom操作
+          console.log(element)
+
           for (let i = 0; i < dataList.length; i++) {
-            console.log(element)
-            this.traversalForElement(modelElement)
-            let node=document.createElement("LI")
-            let textnode=document.createTextNode("Water")
-            node.appendChild(textnode)
-            element.appendChild(node)
+            this.traversalForElement(element, dataList)
+
           }
-          modelElement = null
           // this.traversalElement(element)
           // NOTE：这里这个遍历，直接遍历会死循环，是针对这个for节点的内部遍历，他所定义的节点和逻辑是不一样的，所以按道理
           // 这里的遍历操作的是for的这个内容，所以我们可以考虑把for的内容当做参数传入traversalElement
@@ -219,10 +235,14 @@ class Compiler {
         const elementValue: RegExpExecArray = this.regType.exec(element.innerHTML as string) as RegExpExecArray
         const result = this.handleMatchingData(elementValue.input)
         if (isForDom) {
+          console.log(this.observer.data, forListName)
           const currentDataList: any = this.observer.data[forListName as string]
-          console.log(currentDataList)
           element.innerHTML = currentDataList[0].data
           element.setAttribute('ego-model', currentDataList[0])
+          let node = document.createElement("LI")
+          let textnode = document.createTextNode("Water")
+          node.appendChild(textnode)
+          element.appendChild(node)
         } else {
           if (this.observer.dataList.indexOf(result) === -1) {
             this.observer.dataList.push(result)

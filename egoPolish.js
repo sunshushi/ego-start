@@ -4,6 +4,7 @@
 // 新问题，没有办法控制，没使用标签包裹的绑定点(目前使用检测后强制绑定了一个ego-model，但我觉得这样不太科学)
 // 新问题，如果在一个标签内既有{{}}数据绑定，又有ego-model该如何处理
 // 新问题，事件绑定，在修改数据之后会重复遍历，这样会将数据绑定四次
+// 新问题，事件绑定的遍历和绑定的检测有问题，这两者在处理的时候不够精致，当我们需要处理dom for之内的数据绑定的时候，整个dom都会因为当前的处理方式而gg
 var Observer = /** @class */ (function () {
     function Observer(data, methods, context) {
         var _this = this;
@@ -94,33 +95,52 @@ var Compiler = /** @class */ (function () {
         if (element === void 0) { element = this.documentFragment.children[0]; }
         var index = 0;
         this.currentElement = element;
+        // NOTE:这个循环判断是有问题的
         while (element.children.length > index + 1) {
             // for循环内使用自己的循环，而不用使用这个循环
             if (!this.isHavingAttr(element, 'ego-for')) {
                 this.traversalElement(element.children[index]);
                 index++;
             }
+            else {
+                this.handleCatchForData(element);
+                index++;
+                return;
+            }
         }
         this.handleCatchDataEgoModel(element);
         this.handleCatchDataModel(element);
         this.handleCatchEvent(element);
         this.handleCatchIfData(element);
-        this.handleCatchForData(element);
         return;
     };
     // 考虑为for循环专门写一个遍历
     // for循环之中主要需要支持，数据绑定，if判断，以及事件绑定，不支持for循环嵌套
-    Compiler.prototype.traversalForElement = function (element) {
+    Compiler.prototype.traversalForElement = function (element, dataList) {
         // TODO: for循环的专门遍历逻辑
         var index = 0;
-        while (element.childNodes.length > index + 1) {
-            this.traversalForElement(element.childNodes[index]);
+        while (element.children.length > index) {
+            this.traversalForElement(element.children[index], dataList);
             index++;
         }
-        this.handleCatchDataModel(element, true, 'dataList');
-        // this.handleCatchDataEgoModel(element)
-        // this.handleCatchEvent(element)
-        // this.handleCatchIfData(element)
+        this.handleCatchForDataModel(element, dataList);
+        return;
+    };
+    Compiler.prototype.handleCatchForDataModel = function (element, dataList) {
+        if (element.attributes && element.attributes.length > 0) {
+            if (element.attributes.getNamedItem('for-data')) {
+                var nodeValue = element.attributes.getNamedItem('for-data');
+                if (this.observer.dataList.indexOf(nodeValue.textContent) === -1) {
+                    this.observer.dataList.push(nodeValue.textContent);
+                }
+                if (dataList) {
+                    element.innerHTML = dataList[0][nodeValue.textContent];
+                }
+                else {
+                    element.innerHTML = '';
+                }
+            }
+        }
     };
     // 判断ego-for
     Compiler.prototype.handleCatchForData = function (element) {
@@ -133,22 +153,16 @@ var Compiler = /** @class */ (function () {
                 if (attributes[attr].nodeName.indexOf('ego-for') > -1) {
                     var dataListName = attributes[attr].value;
                     var dataList = this.observer.data[dataListName];
-                    if (!this.observer.data[dataListName]) {
+                    if (!dataList) {
                         this.observer.data[dataListName] = [];
                     }
                     var listLength = this.observer.data[dataListName].length;
                     // 遍历同一个dom，但是要让这个dom渲染listLength次数
-                    var modelElement = document.createDocumentFragment();
-                    modelElement.innerHTML = element.childNodes[0];
+                    // NOTE: 因为dom操作是用fragment进行操作的，不能再fragment里面再创建fragment以及其他的dom操作
+                    console.log(element);
                     for (var i = 0; i < dataList.length; i++) {
-                        console.log(element);
-                        this.traversalForElement(modelElement);
-                        var node = document.createElement("LI");
-                        var textnode = document.createTextNode("Water");
-                        node.appendChild(textnode);
-                        element.appendChild(node);
+                        this.traversalForElement(element, dataList);
                     }
-                    modelElement = null;
                     // this.traversalElement(element)
                     // NOTE：这里这个遍历，直接遍历会死循环，是针对这个for节点的内部遍历，他所定义的节点和逻辑是不一样的，所以按道理
                     // 这里的遍历操作的是for的这个内容，所以我们可以考虑把for的内容当做参数传入traversalElement
@@ -183,10 +197,14 @@ var Compiler = /** @class */ (function () {
                 var elementValue = this.regType.exec(element.innerHTML);
                 var result = this.handleMatchingData(elementValue.input);
                 if (isForDom) {
+                    console.log(this.observer.data, forListName);
                     var currentDataList = this.observer.data[forListName];
-                    console.log(currentDataList);
                     element.innerHTML = currentDataList[0].data;
                     element.setAttribute('ego-model', currentDataList[0]);
+                    var node = document.createElement("LI");
+                    var textnode = document.createTextNode("Water");
+                    node.appendChild(textnode);
+                    element.appendChild(node);
                 }
                 else {
                     if (this.observer.dataList.indexOf(result) === -1) {
